@@ -54,8 +54,9 @@ class NormL(Layer):
 
 
 class pan_network(object): 
-    def __init__(self, classes):
+    def __init__(self, classes, hidden_dim):
         self.nb_class = classes
+        self.hidden_dim = hidden_dim
     def import_images(self, path):
         images = []
         for index, name in enumerate(os.listdir(path)):
@@ -146,9 +147,9 @@ class pan_network(object):
         x_2= Dense(32, activation='relu')(x_2)
         x=Average()([x_1,x_2])
         x=Flatten()(x) 
-        x = Dense(512, activation='relu', name='fc6')(x)
+        x = Dense(self.hidden_dim, activation='relu', name='fc6')(x)
         x=Dropout(0.25)(x)
-        x = Dense(512, activation='relu', name='fc7')(x)
+        x = Dense(self.hidden_dim, activation='relu', name='fc7')(x)
         x=Dropout(0.25)(x)
         out = Dense(self.nb_class, activation='softmax', name='fc8')(x)
         custom_vgg_model = Model([vgg_model.input, att_img], out)
@@ -162,7 +163,7 @@ with tf.device(gpus[0]):
     cvp = []
     cvr = []
     batch_size = 32
-    PAN = pan_network(classes = 4)
+    PAN = pan_network(classes = 4, hidden_dim =512)
     final_model = PAN.model()
     final_model.summary()
     opt =SGD(lr=0.001)
