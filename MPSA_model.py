@@ -129,25 +129,18 @@ class pan_network(object):
         vgg_model.summary()
         x1 = vgg_model.get_layer('conv2_1').output
         x2 = vgg_model.get_layer('conv2_2').output
-        x3 = vgg_model.get_layer('conv3_3').output
-        xl = vgg_model.get_layer('conv4_3').output        
+        x3 = vgg_model.get_layer('conv3_3').output       
         att_1 = self.MPSA()
         x_1 = att_1([x3,x2,x1, att_img])
         x_1 = Activation('relu')(x_1)
         x_1 = NormL()(x_1)
         x_1 =   AveragePooling2D()(x_1)
-        x_1= Dense(32, activation='relu')(x_1)
-        att_2= self.MDA()
-        x_2=att_2([xl,xl,xl])
-        x_2 = Activation('relu')(x_2)
-        x_2 = NormL()(x_2)
-        x_2= Dense(32, activation='relu')(x_2)
-        x=Average()([x_1,x_2])
-        x=Flatten()(x) 
+        x_1 = Dense(32, activation='relu')(x_1)
+        x = Flatten()(x_1) 
         x = Dense(self.hidden_dim, activation='relu', name='fc6')(x)
-        x=Dropout(0.25)(x)
+        x = Dropout(0.25)(x)
         x = Dense(self.hidden_dim, activation='relu', name='fc7')(x)
-        x=Dropout(0.25)(x)
+        x = Dropout(0.25)(x)
         out = Dense(self.nb_class, activation='softmax', name='fc8')(x)
         custom_vgg_model = Model([vgg_model.input, att_img], out)
         return custom_vgg_model
@@ -224,7 +217,7 @@ with tf.device(gpus[0]):
         train_labels_encoded = OneHotEncoder()
         y_valid_cv = train_labels_encoded.fit_transform(y_valid_cv_1.reshape(-1, 1)).toarray()
 
-        name_weights = "final_model_oct17_eccv_fold" + str(j) + "_weights.h5"
+        name_weights = "final_model_oct17_eccvMPSA_fold" + str(j) + "_weights.h5"
         callbacks = get_callbacks(name_weights=name_weights, patience_lr=10)
 
         def generator_two_img(X1, X2, y, batch_size):
@@ -293,9 +286,9 @@ with tf.device(gpus[0]):
         roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
         print("auc=", roc_auc["macro"])
-        np.save('/home/bappaditya/Sapna/Codes/fold_{0}_eccv_oct17_fpr.npy'.format(j), all_fpr)
-        np.save('/home/bappaditya/Sapna/Codes/fold_{0}_eccv_oct17_tpr.npy'.format(j), mean_tpr)
-        final_model.save('/home/bappaditya/Sapna/Codes/fold_{0}_eccv_oct17.hdf5'.format(j))
+        np.save('/home/bappaditya/Sapna/Codes/fold_{0}_eccvMPSA_oct17_fpr.npy'.format(j), all_fpr)
+        np.save('/home/bappaditya/Sapna/Codes/fold_{0}_eccvMPSA_oct17_tpr.npy'.format(j), mean_tpr)
+        final_model.save('/home/bappaditya/Sapna/Codes/fold_{0}_eccvMPSA_oct17.hdf5'.format(j))
 
     print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
     print("%.2f%% (+/- %.2f%%)" % (np.mean(cvp), np.std(cvp)))
