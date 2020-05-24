@@ -134,7 +134,7 @@ class pan_network(object):
         x_1 = att_1([x3,x2,x1, att_img])
         x_1 = Activation('relu')(x_1)
         x_1 = NormL()(x_1)
-        x_1 =   AveragePooling2D()(x_1)
+        #x_1 = AveragePooling2D()(x_1)
         x_1 = Dense(32, activation='relu')(x_1)
         x = Flatten()(x_1) 
         x = Dense(self.hidden_dim, activation='relu', name='fc6')(x)
